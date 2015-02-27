@@ -16,49 +16,23 @@ import dmeneses.maptpg.model.Line;
 import dmeneses.maptpg.model.PhysicalStop;
 import dmeneses.maptpg.model.Stop;
 
-
-
-
 public class StopsCollector extends Collector {
-	public static void main(String[] args) throws IOException, JAXBException, ParserConfigurationException, SAXException, URISyntaxException {
-		List<Stop> stops = getPhysicalStops(null, null);
+	private final static String dir = CACHE_ROOT + "stop" + File.separator;
 
-		for(Stop s : stops) {
-			System.out.println(s.getCode() + " " + s.getName());
-
-			for(PhysicalStop p : s.getPhysicalStops().getItems()) {
-				System.out.println("\t" + p.getCode() + " " + p.getName() + " " + p.getLocation());
-			}
-		}
-		
-		System.out.println("=========\n=========\n=========");
-		savePhysicalStops(stops);
-		stops = loadPhysicalStops();
-		
-		for(Stop s : stops) {
-			System.out.println(s.getCode() + " " + s.getName());
-
-			for(PhysicalStop p : s.getPhysicalStops().getItems()) {
-				System.out.println("\t" + p.getCode() + " " + p.getName() + " " + p.getLocation());
-			}
-		}
-		
-	}
-	
 	public static void savePhysicalStops(List<Stop> stops) throws JAXBException {
-		String fileName = cacheRoot + "stop" + File.separator + "physicalstops.xml";
-		
+		String fileName = dir + "physicalstops.xml";
+
 		List<Class<?>> classes = new LinkedList<Class<?>>();
 		classes.add(Stop.class);
 		classes.add(Line.class);
 		classes.add(PhysicalStop.class);
-		
+
 		marshal(Stop.class, classes, stops, "stops", fileName);
 	}
-	
+
 	public static List<Stop> loadPhysicalStops() throws JAXBException, ParserConfigurationException, IOException, SAXException {
-		String fileName = cacheRoot + "stop" + File.separator + "physicalstops.xml";
-		
+		String fileName = dir + "physicalstops.xml";
+
 		List<Class<?>> classes = new LinkedList<Class<?>>();
 		classes.add(Stop.class);
 		classes.add(Line.class);
@@ -66,21 +40,21 @@ public class StopsCollector extends Collector {
 
 		return  unmarshal(Stop.class, classes, fileName, "stops");
 	}
-	
+
 	public static void saveAllStops(List<Stop> stops) throws JAXBException {
-		String fileName = cacheRoot + "stop" + File.separator + "stops.xml";
-		
+		String fileName = dir + "stops.xml";
+
 		List<Class<?>> classes = new LinkedList<Class<?>>();
 		classes.add(Stop.class);
 		classes.add(Line.class);
 		classes.add(PhysicalStop.class);
-		
+
 		marshal(Stop.class, classes, stops, "stops", fileName);
 	}
-	
+
 	public static List<Stop> loadAllStops() throws JAXBException, ParserConfigurationException, IOException, SAXException {
-		String fileName = cacheRoot + "stop" + File.separator + "stops.xml";
-		
+		String fileName = dir + "stops.xml";
+
 		List<Class<?>> classes = new LinkedList<Class<?>>();
 		classes.add(Stop.class);
 		classes.add(Line.class);
@@ -90,21 +64,10 @@ public class StopsCollector extends Collector {
 	}
 
 	/**
-	 * Gives all stops. If latitude/longitude is given, returns stops within 500m from the point, 
+	 * Gives all stops. If latitude/longitude is given, returns stops within 500m from the point,
 	 * sorted by distance.
-	 * @param stopCode
-	 * @param stopName
-	 * @param line
-	 * @param latitude
-	 * @param longitude
-	 * @return
-	 * @throws JAXBException
-	 * @throws ParserConfigurationException
-	 * @throws IOException
-	 * @throws SAXException
-	 * @throws URISyntaxException
 	 */
-	public static List<Stop> getAllStops(String stopCode, String stopName, 
+	public static List<Stop> getAllStops(String stopCode, String stopName,
 			String line, Float latitude, Float longitude) throws JAXBException, ParserConfigurationException, IOException, SAXException, URISyntaxException {
 
 		URI uri = new URI("http", "rtpi.data.tpg.ch", "/v1/GetStops.xml",
@@ -138,6 +101,4 @@ public class StopsCollector extends Collector {
 
 		return unmarshal(Stop.class, classes, uri.toASCIIString(), "stops");
 	}
-
-
 }

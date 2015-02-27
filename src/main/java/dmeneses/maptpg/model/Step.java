@@ -8,51 +8,22 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
+import lombok.Data;
 import dmeneses.maptpg.datacollection.adapter.DateAdapter;
 
-
-@XmlAccessorType(XmlAccessType.PUBLIC_MEMBER) //all fields serialized!
+@Data
+@XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "step")
 public class Step {
+	@XmlElement(name = "stop", type = Stop.class)
 	private Stop stop;
+	@XmlJavaTypeAdapter(DateAdapter.class)
 	private Date timestamp;
 	private String departureCode;
 	private int arrivalTime;
-	
+
 	@Override
 	public String toString() {
-		return departureCode + "\t" + timestamp + "\t" +
-				arrivalTime + "\t" + stop;
+		return departureCode + "\t" + timestamp + "\t" + arrivalTime + "\t" + stop;
 	}
-	
-	public int getArrivalTime() {
-		return arrivalTime;
-	}
-	@XmlJavaTypeAdapter(DateAdapter.class)
-	public Date getTimestamp() {
-		return timestamp;
-	}
-	public String getDepartureCode() {
-		return departureCode;
-	}
-	@XmlElement(name = "stop", type=Stop.class)
-	public Stop getStop() {
-		return stop;
-	}
-	
-	public void setArrivalTime(int arrivalTime) {
-		this.arrivalTime = arrivalTime;
-	}
-	public void setTimestamp(Date timestamp) {
-		this.timestamp = timestamp;
-	}
-	public void setDepartureCode(String departureCode) {
-		this.departureCode = departureCode;
-	}
-	public void setStop(Stop stop) {
-		this.stop = stop;
-	}
-	
-
-	
 }

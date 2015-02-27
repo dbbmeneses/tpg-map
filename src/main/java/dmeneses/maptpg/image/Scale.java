@@ -11,7 +11,7 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 
 import dmeneses.maptpg.image.gradient.Gradient;
-import dmeneses.maptpg.image.gradient.Gradients;
+import dmeneses.maptpg.image.gradient.GradientFactory;
 
 
 public class Scale {
@@ -23,7 +23,7 @@ public class Scale {
 	}
 	
 	public static void main(String[] args) throws IOException {
-		Gradient g = Gradients.createLinearHueGradient(0,10);
+		Gradient g = GradientFactory.createLinearHueGradient(0,10);
 		Scale s = new Scale(g);
 		s.generate("testScale.png", "test", false);
 	}

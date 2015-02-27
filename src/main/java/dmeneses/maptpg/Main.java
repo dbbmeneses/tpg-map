@@ -28,8 +28,8 @@ import dmeneses.maptpg.datacollection.Collector;
 import dmeneses.maptpg.image.Renderer;
 import dmeneses.maptpg.image.Scale;
 import dmeneses.maptpg.image.gradient.Gradient;
-import dmeneses.maptpg.image.gradient.Gradients;
-import dmeneses.maptpg.image.gradient.Gradients.GRADIENTS;
+import dmeneses.maptpg.image.gradient.GradientFactory;
+import dmeneses.maptpg.image.gradient.GradientFactory.GRADIENTS;
 import dmeneses.maptpg.map.CircleF;
 import dmeneses.maptpg.map.GoogleMapsProjection2;
 import dmeneses.maptpg.map.MapTools;
@@ -37,8 +37,8 @@ import dmeneses.maptpg.map.PolygonF;
 import dmeneses.maptpg.map.ShapeF;
 import dmeneses.maptpg.map.UnionShape;
 import dmeneses.maptpg.process.Itinerary;
-import dmeneses.maptpg.process.Wrapper;
 import dmeneses.maptpg.process.Itinerary.DATA_TYPE;
+import dmeneses.maptpg.process.Wrapper;
 import dmeneses.maptpg.utils.TimeDiff;
 import dmeneses.maptpg.utils.Tools;
 
@@ -58,11 +58,11 @@ public class Main {
 	private static String name = "output_" + Tools.getRandomHexString(8);
 	private static int numPoints = 251;
 	private static String loadPath = null; //"/tmp/results"
-	
+
 	//THESE CAN'T
-	public static String kmlLocation = System.getProperty("user.home") + "/tpg/datastore/geneva.kml";
-	public static String cacheRoot = System.getProperty("user.home") + "/tpg/datastore/";
-	
+	public final static String KML_LOCATION = System.getProperty("user.home") + "/tpg/datastore/geneva.kml";
+	public final static String CACHE_ROOT = System.getProperty("user.home") + "/tpg/datastore/";
+
 	public static void setLoadPath(String loadPath) {
 		Main.loadPath = loadPath;
 	}
@@ -91,14 +91,14 @@ public class Main {
 	public static void setNumPoints(int numPoints) {
 		Main.numPoints = numPoints;
 	}
-	
+
 	public static void generate() throws JAXBException, ParserConfigurationException, IOException, SAXException, URISyntaxException {
 		/*
 		 * Init stuff and validate data
 		 */
 		GoogleMapsProjection2 proj = new GoogleMapsProjection2();
 		Date start;
-		PolygonF poly = MapTools.loadKml(kmlLocation);
+		PolygonF poly = MapTools.loadKml(KML_LOCATION);
 		Map<String, LatLng> locations = new HashMap<String, LatLng>();
 		locations.put("Gare_Cornavin", new LatLng(46.20974027671904,6.14185631275177));
 		locations.put("CERN", new LatLng(46.23345666795791,6.054754257202148));
@@ -110,13 +110,13 @@ public class Main {
 		locations.put("Perle_du_Lac", new LatLng(46.220290673596956, 6.15259051322937));
 		locations.put("Aéroport", new LatLng(46.23046112582612, 6.108779311180115));
 		locations.put("UN", new LatLng(46.224050717186515, 6.139640808105469));
-		
+
 		LatLng src = locations.get(sourceLocation.replace(' ', '_'));
 		if(src == null) {
 			log.severe("Invalid source location: " + sourceLocation);
 			return;
 		}
-		
+
 		/*
 		 * Get Points
 		 */
@@ -127,14 +127,14 @@ public class Main {
 		log.config("topLeft: "  + proj.fromPointToLatLng(shape.getSurroundingBox()[0], 0));
 		log.config("bottomRight: "  + proj.fromPointToLatLng(shape.getSurroundingBox()[1], 0));
 
-		//double resX = LatLngTool.distance(proj.fromPointToLatLng(shape.getSurroundingBox()[0], 
-		//		new LatLng(proj.fromPointToLatLng(shape.getSurroundingBox()[0].getLatitude(), 
+		//double resX = LatLngTool.distance(proj.fromPointToLatLng(shape.getSurroundingBox()[0],
+		//		new LatLng(proj.fromPointToLatLng(shape.getSurroundingBox()[0].getLatitude(),
 		//				proj.fromPointToLatLng(shape.getSurroundingBox()[1], 0), LengthUnit.METER);
-		//double resY = LatLngTool.distance(shape.getSurroundingBox()[0], 
-		//		new LatLng(proj.fromPointToLatLng(shape.getSurroundingBox()[1].getLatitude(), 
+		//double resY = LatLngTool.distance(shape.getSurroundingBox()[0],
+		//		new LatLng(proj.fromPointToLatLng(shape.getSurroundingBox()[1].getLatitude(),
 		//				proj.fromPointToLatLng(shape.getSurroundingBox()[0].getLongitude()), LengthUnit.METER);
 		//log.info(("Points resolution: " + resX + "m X " + resY + " m (X/Y)");
-		
+
 
 		/*
 		 * Itinerary calculation
@@ -142,16 +142,16 @@ public class Main {
 		List<Itinerary> itineraries = null;
 		if(loadPath == null) {
 			start = new Date();
-	
-			Collector.setCacheRoot(cacheRoot);
+
+			Collector.setCacheRoot(CACHE_ROOT);
 			Calendar c = Calendar.getInstance();
 			c.set(2013, 10, 8, startHour, 0, 0);
 			Date startDate = c.getTime();
-	
+
 			itineraries = getItineraries(src, dsts, startDate);
-	
+
 			log.info("Done (" + new TimeDiff(start, new Date()) + ")");
-	
+
 			//
 			// Save results
 			//
@@ -164,7 +164,7 @@ public class Main {
 		else {
 			itineraries = ResultsManager.load(loadPath);
 		}
-		
+
 		/*
 		 * Image generation
 		 */
@@ -188,7 +188,7 @@ public class Main {
 					if(v < min) {
 						min = v;
 					}
-	
+
 					data[i][j] = v;
 				}
 				else {
@@ -205,7 +205,7 @@ public class Main {
 		if(maxScale != null) {
 			max = maxScale;
 		}
-		Gradient g = Gradients.createGradient(gradientType, min, max);
+		Gradient g = GradientFactory.createGradient(gradientType, min, max);
 
 		Renderer r = new Renderer();
 		r.generateBilinear(data, g, tile_size, tile_size, shape); //laptop: 132ms
@@ -224,7 +224,7 @@ public class Main {
 	}
 
 	/**
-	 * Calculates itineraries for a list of destinations. Some destinations might be null, in which case the 
+	 * Calculates itineraries for a list of destinations. Some destinations might be null, in which case the
 	 * corresponding result will also be null.
 	 * @param src
 	 * @param dsts
@@ -250,7 +250,7 @@ public class Main {
 				wrappers.add(new Wrapper(src, dst, startTime, dao));
 			}
 		}
-		
+
 		//start running jobs in separate threads
 		for(Wrapper w : wrappers) {
 			executor.execute(w);
@@ -274,7 +274,7 @@ public class Main {
 			progress++;
 
 			if(progress % s == 0) {
-				int perc = (int) Math.round(100.0 * (float) progress / (float) wrappers.size());
+				int perc = (int) Math.round(100.0 * progress / wrappers.size());
 				log.info(perc + "%");
 			}
 

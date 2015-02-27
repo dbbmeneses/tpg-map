@@ -18,7 +18,7 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.xml.sax.SAXException;
 
-import dmeneses.maptpg.image.gradient.Gradients.GRADIENTS;
+import dmeneses.maptpg.image.gradient.GradientFactory.GRADIENTS;
 import dmeneses.maptpg.process.Itinerary.DATA_TYPE;
 import dmeneses.maptpg.utils.LogFormatter;
 
@@ -114,7 +114,7 @@ public class Command {
 		double doubleValue;
 		String s;
 		CommandLineParser parser = new BasicParser();
-		
+
 		try {
 			CommandLine cmd = parser.parse(generate, args);
 
@@ -154,7 +154,7 @@ public class Command {
 			//location of the database
 			s = cmd.getOptionValue('d');
 			Main.setLoadPath(s);
-			
+
 			//Output image/data path
 			s = cmd.getOptionValue('o');
 			if(s != null) {
@@ -191,27 +191,27 @@ public class Command {
 			formatter.printHelp("tpgmap", generate, true);
 			return;
 		}
-		
+
 		log.info("Parameters parsed");
 		Main.generate();
 	}
-	
+
 	private static void configLog(boolean bolValue) {
 		LogManager.getLogManager().reset();
 		Logger mainLogger = LogManager.getLogManager().getLogger("");
-		
+
 		ConsoleHandler handler = new ConsoleHandler();
 		handler.setFormatter(new LogFormatter());
 		mainLogger.addHandler(handler);
-		
+
 		if(bolValue) {
-			mainLogger.setLevel(Level.FINE); 
+			mainLogger.setLevel(Level.FINE);
 			handler.setLevel(Level.FINE);
 		}
 		else {
-			mainLogger.setLevel(Level.CONFIG); 
+			mainLogger.setLevel(Level.CONFIG);
 			handler.setLevel(Level.CONFIG);
 		}
-		
+
 	}
 }

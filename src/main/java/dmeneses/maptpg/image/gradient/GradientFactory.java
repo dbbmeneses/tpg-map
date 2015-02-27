@@ -5,7 +5,7 @@ package dmeneses.maptpg.image.gradient;
  * @author Duarte Meneses <duarte.meneses@cern.ch>
  *
  */
-public class Gradients {
+public class GradientFactory {
 	public static Gradient createLinearHSVGradient(double min, double max) {
 		return new LinearHSVGradient(min, max);
 	}

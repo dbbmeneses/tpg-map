@@ -6,11 +6,13 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
+import lombok.EqualsAndHashCode;
+
 import com.javadocmd.simplelatlng.LatLng;
 
-import dmeneses.maptpg.datacollection.adapter.*;
+import dmeneses.maptpg.datacollection.adapter.CoordinateAdapter;
 
-
+@EqualsAndHashCode(of = {"code"})
 @XmlRootElement(name = "physicalStop")
 @XmlAccessorType(XmlAccessType.PUBLIC_MEMBER) //all public fields serialized by default!
 public class PhysicalStop {
@@ -18,7 +20,7 @@ public class PhysicalStop {
 	private String name;
 	private LatLng location;
 	private ListWrapper<Line> lines;
-	
+
 	@XmlElement(name = "connections", type=ListWrapper.class)
 	public ListWrapper<Line> getLines() {
 		return lines;
@@ -36,32 +38,12 @@ public class PhysicalStop {
 	public String getName() {
 		return name;
 	}
-	
-	
-	@Override 
+
+	@Override
 	public String toString() {
 		return name;
 	}
-	
-	@Override
-	public int hashCode() {
-		return code.hashCode();
-	}
-	@Override
-	public boolean equals(Object obj) {
-		if(obj == null || this.getClass() != obj.getClass()) {
-			return false;
-		}
-		
-		final PhysicalStop other = (PhysicalStop) obj;
-		
-		if(this.code == other.code) {
-			return true;
-		}
-		
-		return false;
-	}
-	
+
 	public void setLocation(LatLng location) {
 		this.location = location;
 	}
@@ -74,6 +56,4 @@ public class PhysicalStop {
 	public void setLines(ListWrapper<Line> lines) {
 		this.lines = lines;
 	}
-	
-	
 }

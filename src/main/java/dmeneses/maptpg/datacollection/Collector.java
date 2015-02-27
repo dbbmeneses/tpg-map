@@ -18,6 +18,8 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import lombok.extern.log4j.Log4j2;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -27,17 +29,19 @@ import org.xml.sax.SAXException;
 import dmeneses.maptpg.Main;
 import dmeneses.maptpg.model.ListWrapper;
 
-
+@Log4j2
 public abstract class Collector {
-	static public String cacheRoot = Main.cacheRoot;
-	
+	protected static String CACHE_ROOT = Main.CACHE_ROOT;
+
 	public static void setCacheRoot(String path) {
-		Collector.cacheRoot = path;
+		Collector.CACHE_ROOT = path;
 	}
 	protected static <T> void marshal(Class<T> clazz, List<Class<?>> classes, List<T> root, String name, String path) throws JAXBException {
+		log.debug("Marshal: {}", path);
+
 		File file = new File(path);
 		new File(file.getParent()).mkdirs();
-		
+
 		QName qName = new QName(name);
 		ListWrapper<T> list = new ListWrapper<T>();
 		list.setItems(root);
@@ -47,13 +51,14 @@ public abstract class Collector {
 
 		// output pretty printed
 		marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-		
+
 		@SuppressWarnings("rawtypes")
 		JAXBElement<ListWrapper> jaxbElement = new JAXBElement<ListWrapper>(qName, ListWrapper.class, list);
 		marshaller.marshal(jaxbElement, file);
 	}
 
 	protected static <T> List<T> unmarshal(Class<T> clazz, List<Class<?>> classes, String uri, String root) throws JAXBException, ParserConfigurationException, IOException, SAXException {
+		log.debug("Unmarshal: {}", uri);
 		/*
 		 * get connection/file
 		 */
@@ -80,7 +85,7 @@ public abstract class Collector {
 			 */
 			Element rootElement = doc.getDocumentElement();
 			Node subtree = rootElement;
-			
+
 			NodeList nl = rootElement.getElementsByTagName(root);
 			if(nl.getLength() != 0) {
 				subtree = rootElement.getElementsByTagName(root).item(0);
@@ -96,8 +101,9 @@ public abstract class Collector {
 			 * unmarshall it
 			 */
 			@SuppressWarnings("unchecked")
-			ListWrapper<T> wrapper = (ListWrapper<T>) unmarshaller.unmarshal(subtree, ListWrapper.class).getValue();
+			ListWrapper<T> wrapper = unmarshaller.unmarshal(subtree, ListWrapper.class).getValue();
 
+			log.debug("Got {} results", wrapper.getItems().size());
 			return wrapper.getItems();
 
 		} finally {
