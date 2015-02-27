@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import lombok.Getter;
 
 import com.javadocmd.simplelatlng.LatLng;
 import com.javadocmd.simplelatlng.LatLngTool;
@@ -34,12 +35,8 @@ public class Dijkstra implements Runnable {
 	Date startTime;
 	DAO dao;
 	Persistence persistence;
+	@Getter
 	Itinerary result;
-
-
-	public Itinerary getResult() {
-		return result;
-	}
 
 	public Dijkstra(LatLng src, LatLng dst, Date startTime, DAO dao) {
 		this.src = src;
@@ -170,41 +167,6 @@ public class Dijkstra implements Runnable {
 		
 		this.result = new Itinerary(src, dst, startTime, destination.time, path, total_steps);
 	}
-
-	@SuppressWarnings("unused")
-	private SortedSet<IDeparture> getStartNodesDebug(Date startDate) {
-		Line l = null;
-		SortedSet<IDeparture> set = new TreeSet<IDeparture>();
-
-		for(Line line : dao.getAllLines()) {
-			if(line.getCode().equals("18") && line.getDestinationCode().equals("CERN")) {
-				l = line;
-			}
-		}
-		if(l == null) {
-			return set;
-		}
-
-		Stop s = dao.getNearestStop(l, src);
-		if(s == null) { //some lines have no stops, because they have no physical info
-			return set;
-		}
-
-		LatLng loc = dao.getLocation(s, l);
-		if(loc == null) {
-			return set;
-		}
-		double dist = LatLngTool.distance(src, loc, LengthUnit.METER);
-		Date d = Tools.addDateTimeDiff(startDate, Tools.getWalkTime(dist));	
-		IDeparture dep = dao.getNextDeparture(s, l, d);
-
-		if(dep != null) {
-			set.add(dep);
-		}
-
-		return set;
-	}
-	
 	
 	private SortedSet<IDeparture> getStartNodes(Date startDate, Date walkArrival) {
 		List<Line> lines = dao.getAllLines();
@@ -242,7 +204,6 @@ public class Dijkstra implements Runnable {
 
 			}
 		}
-
 
 		return set;
 	}

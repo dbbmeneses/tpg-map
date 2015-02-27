@@ -3,13 +3,15 @@ package dmeneses.maptpg.process;
 import java.util.Date;
 import java.util.LinkedList;
 
+import lombok.Getter;
+
 import com.javadocmd.simplelatlng.LatLng;
 import com.javadocmd.simplelatlng.LatLngTool;
 import com.javadocmd.simplelatlng.util.LengthUnit;
 
 import dmeneses.maptpg.database.types.IDeparture;
 
-
+@Getter
 public class Itinerary {
 	private LatLng src;
 	private LatLng dst;
@@ -48,28 +50,6 @@ public class Itinerary {
 		this.endTime = endTime;
 		this.walkTime = walkTime;
 		this.steps = steps;
-	}
-
-	public LatLng getSrc() {
-		return src;
-	}
-	public LatLng getDst() {
-		return dst;
-	}
-	public int getSteps() {
-		return steps;
-	}
-	public double getWalkTime() {
-		return walkTime;
-	}
-	public Date getStartTime() {
-		return startTime;
-	}
-	public Date getEndTime() {
-		return endTime;
-	}
-	public LinkedList<IDeparture> getPath() {
-		return path;
 	}
 
 	public static String getLegend(DATA_TYPE type) {
@@ -118,7 +98,4 @@ public class Itinerary {
 	}
 
 	public enum DATA_TYPE { TIME, WALK_TIME, NORMALIZED_TIME, SPEED, STEPS };
-
-
-
 }

@@ -212,6 +212,5 @@ public class Command {
 			mainLogger.setLevel(Level.CONFIG);
 			handler.setLevel(Level.CONFIG);
 		}
-
 	}
 }

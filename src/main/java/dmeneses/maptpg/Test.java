@@ -20,16 +20,7 @@ import dmeneses.maptpg.process.Dijkstra;
 import dmeneses.maptpg.process.Itinerary;
 import dmeneses.maptpg.process.Itinerary.DATA_TYPE;
 
-
 public class Test {
-
-	/**
-	 * @param args
-	 * @throws SAXException 
-	 * @throws IOException 
-	 * @throws ParserConfigurationException 
-	 * @throws JAXBException 
-	 */
 	public static void main(String[] args) throws JAXBException, ParserConfigurationException, IOException, SAXException {
 		//final Logger log = Logger.getLogger(Test.class.getName());
 		Persistence fetcher = new Persistence();

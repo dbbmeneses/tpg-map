@@ -13,24 +13,18 @@ import dmeneses.maptpg.datacollection.adapter.DateAdapter;
 
 @Data
 @XmlRootElement(name = "departure")
-@XmlAccessorType(XmlAccessType.NONE)
+@XmlAccessorType(XmlAccessType.FIELD)
 public class Departure {
 	@XmlElement(name = "departureCode")
 	private String code;
 
-	@XmlElement
 	private int waitingTime;
-
-	@XmlElement
 	private int waitingTimeMillis;
 
 	@XmlElement(name = "connection")
 	private Line line;
 
-	@XmlElement
 	private String reliability;
-
-	@XmlElement
 	private String characteristics;
 
 	@XmlElement

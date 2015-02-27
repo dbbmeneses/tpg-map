@@ -36,7 +36,7 @@ public abstract class Collector {
 	public static void setCacheRoot(String path) {
 		Collector.CACHE_ROOT = path;
 	}
-	protected static <T> void marshal(Class<T> clazz, List<Class<?>> classes, List<T> root, String name, String path) throws JAXBException {
+	protected static <T> void marshal(Class<T> clazz, Class<?>[] classes, List<T> root, String name, String path) throws JAXBException {
 		log.debug("Marshal: {}", path);
 
 		File file = new File(path);
@@ -46,7 +46,7 @@ public abstract class Collector {
 		ListWrapper<T> list = new ListWrapper<T>();
 		list.setItems(root);
 
-		JAXBContext jc = JAXBContext.newInstance(classes.toArray(new Class<?>[0]));
+		JAXBContext jc = JAXBContext.newInstance(classes);
 		Marshaller marshaller = jc.createMarshaller();
 
 		// output pretty printed
@@ -57,7 +57,7 @@ public abstract class Collector {
 		marshaller.marshal(jaxbElement, file);
 	}
 
-	protected static <T> List<T> unmarshal(Class<T> clazz, List<Class<?>> classes, String uri, String root) throws JAXBException, ParserConfigurationException, IOException, SAXException {
+	protected static <T> List<T> unmarshal(Class<T> clazz, Class<?>[] classes, String uri, String root) throws JAXBException, ParserConfigurationException, IOException, SAXException {
 		log.debug("Unmarshal: {}", uri);
 		/*
 		 * get connection/file
@@ -94,7 +94,7 @@ public abstract class Collector {
 			/*
 			 * get unmarshaller
 			 */
-			JAXBContext jc = JAXBContext.newInstance(classes.toArray(new Class<?>[0]));
+			JAXBContext jc = JAXBContext.newInstance(classes);
 			Unmarshaller unmarshaller = jc.createUnmarshaller();
 
 			/*

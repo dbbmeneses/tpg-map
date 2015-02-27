@@ -2,17 +2,19 @@ package dmeneses.maptpg.database;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import javax.xml.bind.JAXBException;
 import javax.xml.parsers.ParserConfigurationException;
 
+import lombok.extern.log4j.Log4j2;
+
 import org.xml.sax.SAXException;
+
+import com.google.common.base.Stopwatch;
 
 import dmeneses.maptpg.datacollection.DeparturesCollector;
 import dmeneses.maptpg.datacollection.StopsCollector;
@@ -21,12 +23,10 @@ import dmeneses.maptpg.model.Departure;
 import dmeneses.maptpg.model.Line;
 import dmeneses.maptpg.model.Step;
 import dmeneses.maptpg.model.Stop;
-import dmeneses.maptpg.utils.TimeDiff;
 import dmeneses.maptpg.utils.Tuple;
 
-
+@Log4j2
 public class Persistence {
-	private final static Logger log = Logger.getLogger(Persistence.class.getName());
 	private List<Stop> stops = null;
 	private List<Stop> physicalStops = null;
 	private Map<Tuple<Line, Stop>, List<Departure>> depMap = null;
@@ -68,7 +68,7 @@ public class Persistence {
 	}
 	public void loadCache(String lineCode) throws JAXBException, ParserConfigurationException, IOException, SAXException {
 		log.info("Loading cached data");
-		Date start = new Date();
+		Stopwatch watch = Stopwatch.createStarted();
 		physicalStops = StopsCollector.loadPhysicalStops();
 		stops = StopsCollector.loadAllStops();
 		
@@ -92,7 +92,7 @@ public class Persistence {
 			}
 		}
 		
-		log.info("There are " + lineMap.size() + " lines");
+		log.info("There are {} lines", lineMap.size());
 		
 		/*
 		 * Get all departures for each pair (stop,line).
@@ -107,7 +107,7 @@ public class Persistence {
 		for(Stop s : stops) {
 			int progress = Math.round(100.0f * ((float) i / (float) stops.size()));
 			if(i % p == 0) {
-				log.info(progress + "%");
+				log.info(" {} %", progress);
 			}
 			i++;
 			
@@ -124,9 +124,8 @@ public class Persistence {
 				} 
 				catch(Exception e) {
 					errorCount++;
-					log.warning("Couldn't load departure for " + 
-							s.getName() + " / " + l.getCode() + " / " + l.getDestinationCode());
-					log.warning(e.getMessage());
+					log.warn("Couldn't load departure for {} / {} / {}", s.getName(), l.getCode(), l.getDestinationCode());
+					log.warn(e.getMessage());
 				}
 				//some pairs might have empty departure list! (because of error or no data)
 				if(depList.isEmpty()) {
@@ -140,10 +139,10 @@ public class Persistence {
 			}
 		}
 		
-		log.info("there are " + depMap.size() + " pairs (line,stop)");
-		log.info("from which " + noDepCount + " have no departures");
-		log.info("there were " + errorCount + " errors");
-		log.info("there are " + depCount + " departures");
+		log.info("there are {} pairs (line,stop)", depMap.size());
+		log.info("from which {} have no departures", noDepCount);
+		log.info("there were {} errors", errorCount);
+		log.info("there are {} departures", depCount);
 		
 
 		/*
@@ -167,7 +166,7 @@ public class Persistence {
 				}
 			}
 		}
-		log.info("Loading took " + (new TimeDiff(start, new Date())));
+		log.info("Loading took {}", watch);
 	}
 	
 	public void loadData() throws JAXBException, ParserConfigurationException, IOException, SAXException, URISyntaxException {
@@ -217,8 +216,7 @@ public class Persistence {
 						s.getCode(), l.getCode(), l.getDestinationCode());
 				//some pairs might have empty departure list!
 				if(depList.isEmpty()) {
-					log.fine("(Stop,Line) with no departures:" 
-							+ s.getName() + " / " + l.getCode() + " / " + l.getDestinationCode());
+					log.debug("(Stop,Line) with no departures: {} / {} / {}", s.getName(), l.getCode(), l.getDestinationCode());
 				}
 				i += depList.size();
 				Tuple<Line, Stop> pair = new Tuple<Line, Stop>(l,s);
@@ -226,8 +224,8 @@ public class Persistence {
 			}
 		}
 		
-		log.info("there are " + depMap.size() + " pairs (line,stop)");
-		log.info("there are " + i + " departures");
+		log.info("there are {} pairs (line,stop)", depMap.size());
+		log.info("there are i departures", i);
 		
 		/*
 		 * Get topology of each line.

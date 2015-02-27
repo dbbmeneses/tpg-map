@@ -6,6 +6,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import com.javadocmd.simplelatlng.LatLng;
@@ -14,46 +15,24 @@ import dmeneses.maptpg.datacollection.adapter.CoordinateAdapter;
 
 @EqualsAndHashCode(of = {"code"})
 @XmlRootElement(name = "physicalStop")
-@XmlAccessorType(XmlAccessType.PUBLIC_MEMBER) //all public fields serialized by default!
+@XmlAccessorType(XmlAccessType.FIELD) //all fields serialized by default!
+@Data
 public class PhysicalStop {
+	@XmlElement(name = "physicalStopCode")
 	private String code;
+	
+	@XmlElement(name = "stopName")
 	private String name;
-	private LatLng location;
-	private ListWrapper<Line> lines;
-
-	@XmlElement(name = "connections", type=ListWrapper.class)
-	public ListWrapper<Line> getLines() {
-		return lines;
-	}
+	
 	@XmlElement(name = "coordinates")
 	@XmlJavaTypeAdapter(CoordinateAdapter.class)
-	public LatLng getLocation() {
-		return location;
-	}
-	@XmlElement(name = "physicalStopCode")
-	public String getCode() {
-		return code;
-	}
-	@XmlElement(name = "stopName")
-	public String getName() {
-		return name;
-	}
+	private LatLng location;
+	
+	@XmlElement(name = "connections", type=ListWrapper.class)
+	private ListWrapper<Line> lines;
 
 	@Override
 	public String toString() {
 		return name;
-	}
-
-	public void setLocation(LatLng location) {
-		this.location = location;
-	}
-	public void setCode(String code) {
-		this.code = code;
-	}
-	public void setName(String name) {
-		this.name = name;
-	}
-	public void setLines(ListWrapper<Line> lines) {
-		this.lines = lines;
 	}
 }

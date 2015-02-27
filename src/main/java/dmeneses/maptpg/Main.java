@@ -12,13 +12,15 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
 
 import javax.xml.bind.JAXBException;
 import javax.xml.parsers.ParserConfigurationException;
 
+import lombok.extern.log4j.Log4j2;
+
 import org.xml.sax.SAXException;
 
+import com.google.common.base.Stopwatch;
 import com.javadocmd.simplelatlng.LatLng;
 
 import dmeneses.maptpg.database.DAO;
@@ -39,12 +41,10 @@ import dmeneses.maptpg.map.UnionShape;
 import dmeneses.maptpg.process.Itinerary;
 import dmeneses.maptpg.process.Itinerary.DATA_TYPE;
 import dmeneses.maptpg.process.Wrapper;
-import dmeneses.maptpg.utils.TimeDiff;
 import dmeneses.maptpg.utils.Tools;
 
-
+@Log4j2
 public class Main {
-	private final static Logger log = Logger.getLogger(Main.class.getName());
 	/*
 	 * Options
 	 */
@@ -97,7 +97,6 @@ public class Main {
 		 * Init stuff and validate data
 		 */
 		GoogleMapsProjection2 proj = new GoogleMapsProjection2();
-		Date start;
 		PolygonF poly = MapTools.loadKml(KML_LOCATION);
 		Map<String, LatLng> locations = new HashMap<String, LatLng>();
 		locations.put("Gare_Cornavin", new LatLng(46.20974027671904,6.14185631275177));
@@ -113,7 +112,7 @@ public class Main {
 
 		LatLng src = locations.get(sourceLocation.replace(' ', '_'));
 		if(src == null) {
-			log.severe("Invalid source location: " + sourceLocation);
+			log.error("Invalid source location: {}", sourceLocation);
 			return;
 		}
 
@@ -124,8 +123,8 @@ public class Main {
 		ShapeF shape = new UnionShape(circle, poly);
 		List<LatLng> dsts = MapTools.getPointList(shape.getSurroundingBox(), numPoints, numPoints);
 
-		log.config("topLeft: "  + proj.fromPointToLatLng(shape.getSurroundingBox()[0], 0));
-		log.config("bottomRight: "  + proj.fromPointToLatLng(shape.getSurroundingBox()[1], 0));
+		log.info("topLeft: {}", proj.fromPointToLatLng(shape.getSurroundingBox()[0], 0));
+		log.info("bottomRight: {}", proj.fromPointToLatLng(shape.getSurroundingBox()[1], 0));
 
 		//double resX = LatLngTool.distance(proj.fromPointToLatLng(shape.getSurroundingBox()[0],
 		//		new LatLng(proj.fromPointToLatLng(shape.getSurroundingBox()[0].getLatitude(),
@@ -141,7 +140,7 @@ public class Main {
 		 */
 		List<Itinerary> itineraries = null;
 		if(loadPath == null) {
-			start = new Date();
+			Stopwatch watch = Stopwatch.createStarted();
 
 			Collector.setCacheRoot(CACHE_ROOT);
 			Calendar c = Calendar.getInstance();
@@ -150,16 +149,16 @@ public class Main {
 
 			itineraries = getItineraries(src, dsts, startDate);
 
-			log.info("Done (" + new TimeDiff(start, new Date()) + ")");
+			log.info("Done ({})", watch);
 
 			//
 			// Save results
 			//
-			start = new Date();
+			watch.reset().start();
 			log.info("Saving results... ");
 			ResultsManager.save(name + ".txt", itineraries);
 			log.info("Wrote to " + name + ".txt");
-			log.info("Done (" + new TimeDiff(start, new Date()) + ")");
+			log.info("Done ({})", watch);
 		}
 		else {
 			itineraries = ResultsManager.load(loadPath);
@@ -168,12 +167,12 @@ public class Main {
 		/*
 		 * Image generation
 		 */
-		start = new Date();
+		Stopwatch watch = Stopwatch.createStarted();
 		log.info("Processing results... ");
 		int side = (int) Math.sqrt(itineraries.size());
 		int tile_size = imageSize/(side-1);
 
-		log.fine(Integer.toString(side));
+		log.debug(Integer.toString(side));
 		Double[][] data = new Double[side][side];
 		double max = Double.MIN_VALUE;
 		double min = Double.MAX_VALUE;
@@ -196,10 +195,10 @@ public class Main {
 				}
 			}
 		}
-		log.config("min: " + min + " max: " + max);
-		log.info("Done (" + new TimeDiff(start, new Date()) + ")");
+		log.debug("min: {}, max: {}", min, max);
+		log.info("Done ({})", watch);
 
-		start = new Date();
+		watch.reset().start();
 		log.info("Creating images... ");
 
 		if(maxScale != null) {
@@ -210,8 +209,8 @@ public class Main {
 		Renderer r = new Renderer();
 		r.generateBilinear(data, g, tile_size, tile_size, shape); //laptop: 132ms
 		r.export(name + ".png");
-		log.info("Wrote to " + name + ".png");
-		log.info("Done (" + new TimeDiff(start, new Date()) + ")");
+		log.info("Wrote to {}.png", name);
+		log.info("Done ({})", watch);
 
 		/*
 		 * Create scale

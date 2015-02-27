@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.LinkedList;
 import java.util.List;
 
 import javax.xml.bind.JAXBException;
@@ -18,48 +17,25 @@ import dmeneses.maptpg.model.Stop;
 
 public class StopsCollector extends Collector {
 	private final static String dir = CACHE_ROOT + "stop" + File.separator;
+	private final static Class<?>[] classes = { Stop.class, Line.class, PhysicalStop.class };
 
 	public static void savePhysicalStops(List<Stop> stops) throws JAXBException {
 		String fileName = dir + "physicalstops.xml";
-
-		List<Class<?>> classes = new LinkedList<Class<?>>();
-		classes.add(Stop.class);
-		classes.add(Line.class);
-		classes.add(PhysicalStop.class);
-
 		marshal(Stop.class, classes, stops, "stops", fileName);
 	}
 
 	public static List<Stop> loadPhysicalStops() throws JAXBException, ParserConfigurationException, IOException, SAXException {
 		String fileName = dir + "physicalstops.xml";
-
-		List<Class<?>> classes = new LinkedList<Class<?>>();
-		classes.add(Stop.class);
-		classes.add(Line.class);
-		classes.add(PhysicalStop.class);
-
 		return  unmarshal(Stop.class, classes, fileName, "stops");
 	}
 
 	public static void saveAllStops(List<Stop> stops) throws JAXBException {
 		String fileName = dir + "stops.xml";
-
-		List<Class<?>> classes = new LinkedList<Class<?>>();
-		classes.add(Stop.class);
-		classes.add(Line.class);
-		classes.add(PhysicalStop.class);
-
 		marshal(Stop.class, classes, stops, "stops", fileName);
 	}
 
 	public static List<Stop> loadAllStops() throws JAXBException, ParserConfigurationException, IOException, SAXException {
 		String fileName = dir + "stops.xml";
-
-		List<Class<?>> classes = new LinkedList<Class<?>>();
-		classes.add(Stop.class);
-		classes.add(Line.class);
-		classes.add(PhysicalStop.class);
-
 		return  unmarshal(Stop.class, classes, fileName, "stops");
 	}
 
@@ -79,11 +55,6 @@ public class StopsCollector extends Collector {
 						+ ((longitude != null) ? "&longitude=" + longitude.toString() : ""),
 				null);
 
-		List<Class<?>> classes = new LinkedList<Class<?>>();
-		classes.add(Stop.class);
-		classes.add(Line.class);
-		classes.add(PhysicalStop.class);
-
 		return unmarshal(Stop.class, classes, uri.toASCIIString(), "stops");
 	}
 
@@ -93,11 +64,6 @@ public class StopsCollector extends Collector {
 						+ ((stopCode != null) ? "&stopCode=" + stopCode : "")
 						+ ((stopName != null) ? "&stopName=" + stopName : ""),
 				null);
-
-		List<Class<?>> classes = new LinkedList<Class<?>>();
-		classes.add(Stop.class);
-		classes.add(Line.class);
-		classes.add(PhysicalStop.class);
 
 		return unmarshal(Stop.class, classes, uri.toASCIIString(), "stops");
 	}
