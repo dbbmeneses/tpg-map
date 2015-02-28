@@ -38,7 +38,14 @@ public class StopsCollector extends Collector {
 		String fileName = dir + "stops.xml";
 		return  unmarshal(Stop.class, classes, fileName, "stops");
 	}
-
+	
+	public static List<Stop> getPhysicalStops() throws JAXBException, ParserConfigurationException, IOException, SAXException, URISyntaxException {
+		return getPhysicalStops(null, null);
+	}
+	
+	public static List<Stop> getAllStops() throws JAXBException, ParserConfigurationException, IOException, SAXException, URISyntaxException {
+		return getAllStops(null, null, null, null, null);
+	}
 	/**
 	 * Gives all stops. If latitude/longitude is given, returns stops within 500m from the point,
 	 * sorted by distance.

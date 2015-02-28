@@ -14,12 +14,10 @@ import com.javadocmd.simplelatlng.LatLng;
 
 import dmeneses.maptpg.process.Itinerary;
 
-
 public class ResultsManager {
 	public static void save(String path, List<Itinerary> itineraries) throws IOException {
 		FileWriter fw = new FileWriter(path);
 		BufferedWriter bw = new BufferedWriter(fw);
-		
 		
 		for(Itinerary i : itineraries) {
 			StringBuilder sb = new StringBuilder(1000);
@@ -72,7 +70,4 @@ public class ResultsManager {
 		
 		return itineraries;
 	}
-	
-	
-	
 }

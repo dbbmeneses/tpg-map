@@ -29,5 +29,4 @@ public class ListWrapper<T> implements Iterable<T> {
 	public Iterator<T> iterator() {
 		return items.iterator();
 	}
-    
 }

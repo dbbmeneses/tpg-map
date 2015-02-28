@@ -30,4 +30,9 @@ public class Departure {
 	@XmlElement
 	@XmlJavaTypeAdapter(DateAdapter.class)
 	private Date timestamp;
+	
+	@Override
+	public String toString() {
+		return code + " (" + line + ") " + timestamp;
+	}
 }

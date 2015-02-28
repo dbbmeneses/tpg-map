@@ -10,6 +10,7 @@ import java.util.Map;
 import javax.xml.bind.JAXBException;
 import javax.xml.parsers.ParserConfigurationException;
 
+import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 
 import org.xml.sax.SAXException;
@@ -26,28 +27,15 @@ import dmeneses.maptpg.model.Stop;
 import dmeneses.maptpg.utils.Tuple;
 
 @Log4j2
+@Getter
 public class Persistence {
 	private List<Stop> stops = null;
 	private List<Stop> physicalStops = null;
 	private Map<Tuple<Line, Stop>, List<Departure>> depMap = null;
 	private Map<Line, List<Step>> stepMap = null;
-	
-	public List<Stop> getPhysicalStops() {
-		return physicalStops;
-	}
-	public Map<Tuple<Line, Stop>, List<Departure>> getDepMap() {
-		return depMap;
-	}
-	
-	public List<Stop> getStops() {
-		return stops;
-	}
-	
-	public Map<Line, List<Step>> getStepMap() {
-		return stepMap;
-	}
 
 	public void cacheData() throws JAXBException {
+		log.debug("caching data");
 		StopsCollector.savePhysicalStops(physicalStops);
 		StopsCollector.saveAllStops(stops);
 		
@@ -61,11 +49,14 @@ public class Persistence {
 			List<Step> steps = stepMap.get(l);
 			ThermometerCollector.saveThermometer(l.getCode(),  l.getDestinationCode(), steps);
 		}
+		
+		log.debug("caching done");
 	}
 	
 	public void loadCache() throws JAXBException, ParserConfigurationException, IOException, SAXException {
 		loadCache(null);
 	}
+	
 	public void loadCache(String lineCode) throws JAXBException, ParserConfigurationException, IOException, SAXException {
 		log.info("Loading cached data");
 		Stopwatch watch = Stopwatch.createStarted();
@@ -104,6 +95,7 @@ public class Persistence {
 		int i = 0;
 		int p = stops.size() / 10;
 		depMap = new HashMap<Tuple<Line, Stop>, List<Departure>>();
+		
 		for(Stop s : stops) {
 			int progress = Math.round(100.0f * ((float) i / (float) stops.size()));
 			if(i % p == 0) {
@@ -172,6 +164,7 @@ public class Persistence {
 	public void loadData() throws JAXBException, ParserConfigurationException, IOException, SAXException, URISyntaxException {
 		loadData(null);
 	}
+	
 	public void loadData(String lineCode) throws JAXBException, ParserConfigurationException, IOException, SAXException, URISyntaxException {
 		/*
 		 * Get all stops and physical stops.
@@ -198,7 +191,7 @@ public class Persistence {
 			}
 		}
 		
-		log.info("there are " + lineMap.size() + " lines");
+		log.info("there are {} lines", lineMap.size());
 
 		/*
 		 * Get all departures for each pair (stop,line).
@@ -225,7 +218,7 @@ public class Persistence {
 		}
 		
 		log.info("there are {} pairs (line,stop)", depMap.size());
-		log.info("there are i departures", i);
+		log.info("there are {} departures", i);
 		
 		/*
 		 * Get topology of each line.
@@ -248,6 +241,5 @@ public class Persistence {
 				}
 			}
 		}
-
 	}
 }

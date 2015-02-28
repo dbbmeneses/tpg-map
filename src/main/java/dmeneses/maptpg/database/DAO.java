@@ -10,13 +10,15 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.logging.Logger;
 
 import javax.xml.bind.JAXBException;
 import javax.xml.parsers.ParserConfigurationException;
 
+import lombok.extern.log4j.Log4j2;
+
 import org.xml.sax.SAXException;
 
+import com.google.common.base.Stopwatch;
 import com.javadocmd.simplelatlng.LatLng;
 import com.javadocmd.simplelatlng.LatLngTool;
 import com.javadocmd.simplelatlng.util.LengthUnit;
@@ -31,14 +33,12 @@ import dmeneses.maptpg.utils.TimeDiff;
 import dmeneses.maptpg.utils.Tools;
 import dmeneses.maptpg.utils.Tuple;
 
-
+@Log4j2
 public class DAO {
-	private final static Logger log = Logger.getLogger(DAO.class.getName());
 	private List<Line> lines;
 	private List<Stop> stops;
 	private List<IDeparture> departures;
 	private Map<Tuple<Line,Stop>, List<IDeparture>> departureMap;
-
 
 	public DAO(DAO copy) {
 		this.lines = copy.lines;
@@ -66,7 +66,7 @@ public class DAO {
 
 	public DAO(Persistence p) throws JAXBException, ParserConfigurationException, IOException, SAXException {
 		log.info("Starting processing data");
-		Date start = new Date();
+		Stopwatch watch = Stopwatch.createStarted();
 
 		/*
 		 * merge stops info
@@ -88,7 +88,7 @@ public class DAO {
 				}
 			}
 			if(!found) {
-				log.fine("Couldn't find physical stops for " + s + " - Removing it");
+				log.debug("Couldn't find physical stops for {} - Removing it", s);
 				itStop.remove();
 			}
 		}
@@ -112,12 +112,11 @@ public class DAO {
 				}
 
 				if(!found) {
-					log.fine("couldn't find stop " + s.getStop() + " in line " 
-							+ l + " - Step will not be in line");
+					log.debug("couldn't find stop {} in line {} - Step will not be in line", s.getStop(), l);
 				}
 			}
 			if(stopList.isEmpty()) {
-				log.fine("Line " + l + " has no valid stops - won't be in list");
+				log.debug("Line {} has no valid stops - won't be in list", l);
 				continue;
 			}
 			l.setStops(stopList);
@@ -141,7 +140,7 @@ public class DAO {
 				}
 			}
 			if(!found) {
-				log.fine("departure from " + t + " with invalid stop - Skipping it");
+				log.debug("departure from {} with invalid stop - Skipping it", t);
 				continue;
 			}
 
@@ -154,7 +153,7 @@ public class DAO {
 				}
 			}
 			if(!found) {
-				log.fine("departure from " + t + " with invalid line - Skipping it");
+				log.debug("departure from {} with invalid line - Skipping it", t);
 				continue;
 			}
 
@@ -199,8 +198,7 @@ public class DAO {
 			departureMap.put(new Tuple<Line, Stop>(l, s), list);
 		}
 
-		log.info("Processing took " + (new TimeDiff(start, new Date())));
-
+		log.info("Processing took {}", watch);
 	}
 
 	protected void setAllLines(List<Line> lines) {
@@ -307,7 +305,6 @@ public class DAO {
 		return nStop;
 	}
 
-
 	public PhysicalStop getPhysicalStop(Stop stop, Line line) {
 		if(stop.getPhysicalStops() == null) {
 			return null;
@@ -363,5 +360,4 @@ public class DAO {
 
 		return nearest;
 	}
-
 }

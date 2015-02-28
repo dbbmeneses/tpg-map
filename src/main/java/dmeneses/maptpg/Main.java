@@ -23,6 +23,7 @@ import org.xml.sax.SAXException;
 import com.google.common.base.Stopwatch;
 import com.javadocmd.simplelatlng.LatLng;
 
+import dmeneses.maptpg.config.Configuration;
 import dmeneses.maptpg.database.DAO;
 import dmeneses.maptpg.database.Persistence;
 import dmeneses.maptpg.database.ResultsManager;
@@ -31,7 +32,6 @@ import dmeneses.maptpg.image.Renderer;
 import dmeneses.maptpg.image.Scale;
 import dmeneses.maptpg.image.gradient.Gradient;
 import dmeneses.maptpg.image.gradient.GradientFactory;
-import dmeneses.maptpg.image.gradient.GradientFactory.GRADIENTS;
 import dmeneses.maptpg.map.CircleF;
 import dmeneses.maptpg.map.GoogleMapsProjection2;
 import dmeneses.maptpg.map.MapTools;
@@ -39,65 +39,16 @@ import dmeneses.maptpg.map.PolygonF;
 import dmeneses.maptpg.map.ShapeF;
 import dmeneses.maptpg.map.UnionShape;
 import dmeneses.maptpg.process.Itinerary;
-import dmeneses.maptpg.process.Itinerary.DATA_TYPE;
 import dmeneses.maptpg.process.Wrapper;
-import dmeneses.maptpg.utils.Tools;
 
 @Log4j2
 public class Main {
-	/*
-	 * Options
-	 */
-	//THESE CAN BE MODIFIED
-	private static int imageSize = 1000;
-	private static Itinerary.DATA_TYPE dataType = DATA_TYPE.TIME;
-	private static Double maxScale = null;
-	private static String sourceLocation = "CERN";
-	private static int startHour = 15;
-	private static GRADIENTS gradientType = GRADIENTS.LINEAR_HUE;
-	private static String name = "output_" + Tools.getRandomHexString(8);
-	private static int numPoints = 251;
-	private static String loadPath = null; //"/tmp/results"
-
-	//THESE CAN'T
-	public final static String KML_LOCATION = System.getProperty("user.home") + "/tpg/datastore/geneva.kml";
-	public final static String CACHE_ROOT = System.getProperty("user.home") + "/tpg/datastore/";
-
-	public static void setLoadPath(String loadPath) {
-		Main.loadPath = loadPath;
-	}
-
-	public static void setImageSize(int imageSize) {
-		Main.imageSize = imageSize;
-	}
-	public static void setDataType(Itinerary.DATA_TYPE dataType) {
-		Main.dataType = dataType;
-	}
-	public static void setMaxScale(Double maxScale) {
-		Main.maxScale = maxScale;
-	}
-	public static void setSourceLocation(String sourceLocation) {
-		Main.sourceLocation = sourceLocation;
-	}
-	public static void setStartHour(int startHour) {
-		Main.startHour = startHour;
-	}
-	public static void setGradientType(GRADIENTS gradientType) {
-		Main.gradientType = gradientType;
-	}
-	public static void setName(String name) {
-		Main.name = name;
-	}
-	public static void setNumPoints(int numPoints) {
-		Main.numPoints = numPoints;
-	}
-
-	public static void generate() throws JAXBException, ParserConfigurationException, IOException, SAXException, URISyntaxException {
+	public static void generate(Configuration config) throws JAXBException, ParserConfigurationException, IOException, SAXException, URISyntaxException {
 		/*
 		 * Init stuff and validate data
 		 */
 		GoogleMapsProjection2 proj = new GoogleMapsProjection2();
-		PolygonF poly = MapTools.loadKml(KML_LOCATION);
+		PolygonF poly = MapTools.loadKml(Configuration.KML_LOCATION);
 		Map<String, LatLng> locations = new HashMap<String, LatLng>();
 		locations.put("Gare_Cornavin", new LatLng(46.20974027671904,6.14185631275177));
 		locations.put("CERN", new LatLng(46.23345666795791,6.054754257202148));
@@ -110,9 +61,9 @@ public class Main {
 		locations.put("Aéroport", new LatLng(46.23046112582612, 6.108779311180115));
 		locations.put("UN", new LatLng(46.224050717186515, 6.139640808105469));
 
-		LatLng src = locations.get(sourceLocation.replace(' ', '_'));
+		LatLng src = locations.get(config.getSourceLocation().replace(' ', '_'));
 		if(src == null) {
-			log.error("Invalid source location: {}", sourceLocation);
+			log.error("Invalid source location: {}", config.getSourceLocation());
 			return;
 		}
 
@@ -121,7 +72,7 @@ public class Main {
 		 */
 		ShapeF circle = new CircleF(proj.fromLatLngToPoint(new LatLng(46.209418049302556, 6.121101379394531), 0), 0.12);
 		ShapeF shape = new UnionShape(circle, poly);
-		List<LatLng> dsts = MapTools.getPointList(shape.getSurroundingBox(), numPoints, numPoints);
+		List<LatLng> dsts = MapTools.getPointList(shape.getSurroundingBox(), config.getNumPoints(), config.getNumPoints());
 
 		log.info("topLeft: {}", proj.fromPointToLatLng(shape.getSurroundingBox()[0], 0));
 		log.info("bottomRight: {}", proj.fromPointToLatLng(shape.getSurroundingBox()[1], 0));
@@ -139,12 +90,12 @@ public class Main {
 		 * Itinerary calculation
 		 */
 		List<Itinerary> itineraries = null;
-		if(loadPath == null) {
+		if(config.getLoadPath() == null) {
 			Stopwatch watch = Stopwatch.createStarted();
 
-			Collector.setCacheRoot(CACHE_ROOT);
+			Collector.setCacheRoot(Configuration.CACHE_ROOT);
 			Calendar c = Calendar.getInstance();
-			c.set(2013, 10, 8, startHour, 0, 0);
+			c.set(2013, 10, 8, config.getStartHour(), 0, 0);
 			Date startDate = c.getTime();
 
 			itineraries = getItineraries(src, dsts, startDate);
@@ -156,12 +107,12 @@ public class Main {
 			//
 			watch.reset().start();
 			log.info("Saving results... ");
-			ResultsManager.save(name + ".txt", itineraries);
-			log.info("Wrote to " + name + ".txt");
+			ResultsManager.save(config.getName() + ".txt", itineraries);
+			log.info("Wrote to {}.txt", config.getName());
 			log.info("Done ({})", watch);
 		}
 		else {
-			itineraries = ResultsManager.load(loadPath);
+			itineraries = ResultsManager.load(config.getLoadPath());
 		}
 
 		/*
@@ -170,7 +121,7 @@ public class Main {
 		Stopwatch watch = Stopwatch.createStarted();
 		log.info("Processing results... ");
 		int side = (int) Math.sqrt(itineraries.size());
-		int tile_size = imageSize/(side-1);
+		int tile_size = config.getImageSize()/(side-1);
 
 		log.debug(Integer.toString(side));
 		Double[][] data = new Double[side][side];
@@ -180,7 +131,7 @@ public class Main {
 			for(int j = 0; j<side; j++) {
 				Itinerary it = itineraries.get(i*side+j);
 				if(it != null) {
-					double v = it.getData(dataType);
+					double v = it.getData(config.getDataType());
 					if(v > max) {
 						max = v;
 					}
@@ -201,15 +152,15 @@ public class Main {
 		watch.reset().start();
 		log.info("Creating images... ");
 
-		if(maxScale != null) {
-			max = maxScale;
+		if(config.getMaxScale() != null) {
+			max = config.getMaxScale();
 		}
-		Gradient g = GradientFactory.createGradient(gradientType, min, max);
+		Gradient g = GradientFactory.createGradient(config.getGradientType(), min, max);
 
 		Renderer r = new Renderer();
 		r.generateBilinear(data, g, tile_size, tile_size, shape); //laptop: 132ms
-		r.export(name + ".png");
-		log.info("Wrote to {}.png", name);
+		r.export(config.getName() + ".png");
+		log.info("Wrote to {}.png", config.getName());
 		log.info("Done ({})", watch);
 
 		/*
@@ -217,22 +168,14 @@ public class Main {
 		 */
 		log.info("Generating scale");
 		Scale scale = new Scale(g);
-		scale.generate(name + "-scale.png", Itinerary.getLegend(dataType), true);
-		log.info("Wrote to " + name + "-scale.png");
+		scale.generate(config.getName() + "-scale.png", Itinerary.getLegend(config.getDataType()), true);
+		log.info("Wrote to {}-scale.png", config.getName());
 
 	}
 
 	/**
 	 * Calculates itineraries for a list of destinations. Some destinations might be null, in which case the
 	 * corresponding result will also be null.
-	 * @param src
-	 * @param dsts
-	 * @param startTime
-	 * @return
-	 * @throws JAXBException
-	 * @throws ParserConfigurationException
-	 * @throws IOException
-	 * @throws SAXException
 	 */
 	public static ArrayList<Itinerary> getItineraries(LatLng src, List<LatLng> dsts, Date startTime) throws JAXBException, ParserConfigurationException, IOException, SAXException {
 		Persistence fetcher = new Persistence();
@@ -274,9 +217,8 @@ public class Main {
 
 			if(progress % s == 0) {
 				int perc = (int) Math.round(100.0 * progress / wrappers.size());
-				log.info(perc + "%");
+				log.info("{} %", perc);
 			}
-
 		}
 
 		//make sure all threads are done

@@ -83,7 +83,5 @@ public class IDeparture implements Comparable<IDeparture>  {
 		c = this.getStop().getCode().compareTo(o.getStop().getCode());
 
 		return c;
-
 	}
-
 }

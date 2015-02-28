@@ -1,4 +1,4 @@
-package dmeneses.maptpg;
+package maptpg;
 
 import java.io.IOException;
 import java.util.Calendar;
@@ -6,6 +6,8 @@ import java.util.Date;
 
 import javax.xml.bind.JAXBException;
 import javax.xml.parsers.ParserConfigurationException;
+
+import lombok.extern.log4j.Log4j2;
 
 import org.xml.sax.SAXException;
 
@@ -20,7 +22,8 @@ import dmeneses.maptpg.process.Dijkstra;
 import dmeneses.maptpg.process.Itinerary;
 import dmeneses.maptpg.process.Itinerary.DATA_TYPE;
 
-public class Test {
+@Log4j2
+public class TestDijkstra {
 	public static void main(String[] args) throws JAXBException, ParserConfigurationException, IOException, SAXException {
 		//final Logger log = Logger.getLogger(Test.class.getName());
 		Persistence fetcher = new Persistence();
@@ -48,19 +51,17 @@ public class Test {
 		double totalDist = LatLngTool.distance(result.getSrc(),
 				result.getDst(), LengthUnit.METER);
 		
-		System.out.println("Source walking distance: " + destDist);
-		System.out.println("Destination walking distance: " + srcDist);
-		System.out.println("Total distance: " + totalDist);
-		System.out.println("Total time: " + Double.toString(result.getData(DATA_TYPE.TIME)));
-		System.out.println("Av speed: " + Double.toString(result.getData(DATA_TYPE.SPEED)));
-		System.out.println("Normalized time: " + Double.toString(result.getData(DATA_TYPE.NORMALIZED_TIME)));
-		System.out.println("Walk time: " + Double.toString(result.getData(DATA_TYPE.WALK_TIME)));
-		System.out.println("Total steps: " + result.getData(DATA_TYPE.STEPS));
+		log.info("Source walking distance: " + destDist);
+		log.info("Destination walking distance: " + srcDist);
+		log.info("Total distance: " + totalDist);
+		log.info("Total time: " + Double.toString(result.getData(DATA_TYPE.TIME)));
+		log.info("Av speed: " + Double.toString(result.getData(DATA_TYPE.SPEED)));
+		log.info("Normalized time: " + Double.toString(result.getData(DATA_TYPE.NORMALIZED_TIME)));
+		log.info("Walk time: " + Double.toString(result.getData(DATA_TYPE.WALK_TIME)));
+		log.info("Total steps: " + result.getData(DATA_TYPE.STEPS));
 		
 		for(IDeparture id : result.getPath()) {
-			System.out.println(id.toString());
+			log.info(id.toString());
 		}
-
 	}
-
 }

@@ -46,6 +46,6 @@ public class DeparturesCollector extends Collector {
 				 + "&lineCode=" + lineCode
 				 + "&destinationCode=" + destinationCode, null);
 
-		return unmarshal(Departure.class, classes, uri.toASCIIString(), "nextDepartures");
+		return unmarshal(Departure.class, classes, uri.toASCIIString(), "departures");
 	}
 }

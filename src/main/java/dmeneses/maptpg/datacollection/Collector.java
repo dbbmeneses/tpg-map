@@ -26,18 +26,19 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import dmeneses.maptpg.Main;
+import dmeneses.maptpg.config.Configuration;
 import dmeneses.maptpg.model.ListWrapper;
 
 @Log4j2
 public abstract class Collector {
-	protected static String CACHE_ROOT = Main.CACHE_ROOT;
+	protected static String CACHE_ROOT = Configuration.CACHE_ROOT;
+	public static int numCalls = 0;
 
 	public static void setCacheRoot(String path) {
 		Collector.CACHE_ROOT = path;
 	}
 	protected static <T> void marshal(Class<T> clazz, Class<?>[] classes, List<T> root, String name, String path) throws JAXBException {
-		log.debug("Marshal: {}", path);
+		log.trace("Marshal: {}", path);
 
 		File file = new File(path);
 		new File(file.getParent()).mkdirs();
@@ -58,7 +59,7 @@ public abstract class Collector {
 	}
 
 	protected static <T> List<T> unmarshal(Class<T> clazz, Class<?>[] classes, String uri, String root) throws JAXBException, ParserConfigurationException, IOException, SAXException {
-		log.debug("Unmarshal: {}", uri);
+		log.trace("Unmarshal: {}", uri);
 		/*
 		 * get connection/file
 		 */
@@ -71,6 +72,7 @@ public abstract class Collector {
 				URL url = new URL(uri);
 				URLConnection conn = url.openConnection();
 				in =conn.getInputStream();
+				numCalls++;
 			}
 			/*
 			 * get xml document
@@ -103,7 +105,7 @@ public abstract class Collector {
 			@SuppressWarnings("unchecked")
 			ListWrapper<T> wrapper = unmarshaller.unmarshal(subtree, ListWrapper.class).getValue();
 
-			log.debug("Got {} results", wrapper.getItems().size());
+			log.trace("Got {} results", wrapper.getItems().size());
 			return wrapper.getItems();
 
 		} finally {

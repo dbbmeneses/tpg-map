@@ -1,11 +1,7 @@
 package dmeneses.maptpg.process;
 
 import java.util.Date;
-
-import lombok.AllArgsConstructor;
-
 import com.javadocmd.simplelatlng.LatLng;
-
 import dmeneses.maptpg.database.DAO;
 
 public class Wrapper implements Runnable {
