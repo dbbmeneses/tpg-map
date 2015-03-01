@@ -24,21 +24,21 @@ import com.javadocmd.simplelatlng.LatLngTool;
 import com.javadocmd.simplelatlng.util.LengthUnit;
 
 import dmeneses.maptpg.database.types.IDeparture;
-import dmeneses.maptpg.model.Departure;
-import dmeneses.maptpg.model.Line;
-import dmeneses.maptpg.model.PhysicalStop;
-import dmeneses.maptpg.model.Step;
-import dmeneses.maptpg.model.Stop;
+import dmeneses.maptpg.datacollection.model.XMLDeparture;
+import dmeneses.maptpg.datacollection.model.XMLLine;
+import dmeneses.maptpg.datacollection.model.XMLPhysicalStop;
+import dmeneses.maptpg.datacollection.model.XMLStep;
+import dmeneses.maptpg.datacollection.model.XMLStop;
 import dmeneses.maptpg.utils.TimeDiff;
 import dmeneses.maptpg.utils.Tools;
 import dmeneses.maptpg.utils.Tuple;
 
 @Log4j2
 public class DAO {
-	private List<Line> lines;
-	private List<Stop> stops;
+	private List<XMLLine> lines;
+	private List<XMLStop> stops;
 	private List<IDeparture> departures;
-	private Map<Tuple<Line,Stop>, List<IDeparture>> departureMap;
+	private Map<Tuple<XMLLine,XMLStop>, List<IDeparture>> departureMap;
 
 	public DAO(DAO copy) {
 		this.lines = copy.lines;
@@ -46,11 +46,11 @@ public class DAO {
 
 		//deep copy of IDeparture
 		departures = new ArrayList<IDeparture>(copy.departures.size());
-		departureMap = new HashMap<Tuple<Line,Stop>, List<IDeparture>>(copy.departureMap.size());
+		departureMap = new HashMap<Tuple<XMLLine,XMLStop>, List<IDeparture>>(copy.departureMap.size());
 
-		Iterator<Entry<Tuple<Line,Stop>, List<IDeparture>>> it = copy.departureMap.entrySet().iterator();
+		Iterator<Entry<Tuple<XMLLine,XMLStop>, List<IDeparture>>> it = copy.departureMap.entrySet().iterator();
 		while(it.hasNext()) {
-			Entry<Tuple<Line,Stop>, List<IDeparture>> e = it.next();
+			Entry<Tuple<XMLLine,XMLStop>, List<IDeparture>> e = it.next();
 			List<IDeparture> idList = new ArrayList<IDeparture>(e.getValue().size());
 			Iterator<IDeparture> listIt = e.getValue().iterator();
 			while(listIt.hasNext()) {
@@ -64,7 +64,7 @@ public class DAO {
 	}
 
 
-	public DAO(Persistence p) throws JAXBException, ParserConfigurationException, IOException, SAXException {
+	public DAO(XmlDao p) throws JAXBException, ParserConfigurationException, IOException, SAXException {
 		log.info("Starting processing data");
 		Stopwatch watch = Stopwatch.createStarted();
 
@@ -72,14 +72,14 @@ public class DAO {
 		 * merge stops info
 		 */
 		///TODO 3 stops missing from AllStops!!!
-		List<Stop> physicalStops = p.getPhysicalStops();
+		List<XMLStop> physicalStops = p.getPhysicalStops();
 		this.stops = p.getStops();
 
-		Iterator<Stop> itStop = this.stops.iterator();
+		Iterator<XMLStop> itStop = this.stops.iterator();
 		while(itStop.hasNext()) {
-			Stop s = itStop.next();
+			XMLStop s = itStop.next();
 			boolean found = false;
-			for(Stop ph : physicalStops) {
+			for(XMLStop ph : physicalStops) {
 				if(s.equals(ph)) {
 					found = true;
 
@@ -96,15 +96,15 @@ public class DAO {
 		/*
 		 * Put stops in Line
 		 */
-		Map<Line, List<Step>> stepMap = p.getStepMap();
-		lines = new ArrayList<Line>(stepMap.size());
+		Map<XMLLine, List<XMLStep>> stepMap = p.getStepMap();
+		lines = new ArrayList<XMLLine>(stepMap.size());
 
-		for(Line l : stepMap.keySet()) {
-			List<Step> steps = stepMap.get(l);
-			List<Stop> stopList = new ArrayList<Stop>(steps.size());
-			for(Step s : steps) {
+		for(XMLLine l : stepMap.keySet()) {
+			List<XMLStep> steps = stepMap.get(l);
+			List<XMLStop> stopList = new ArrayList<XMLStop>(steps.size());
+			for(XMLStep s : steps) {
 				boolean found = false;
-				for(Stop stop : this.stops) {
+				for(XMLStop stop : this.stops) {
 					if(stop.equals(s.getStop())) {
 						found = true;
 						stopList.add(stop);
@@ -126,14 +126,14 @@ public class DAO {
 		/*
 		 * Create IDeparture List and IDeparture Map
 		 */
-		Map<Tuple<Line, Stop>, List<Departure>> orig_depMap = p.getDepMap();
-		departureMap = new HashMap<Tuple<Line,Stop>, List<IDeparture>>();
+		Map<Tuple<XMLLine, XMLStop>, List<XMLDeparture>> orig_depMap = p.getDepMap();
+		departureMap = new HashMap<Tuple<XMLLine,XMLStop>, List<IDeparture>>();
 		departures = new ArrayList<IDeparture>();
 
-		for(Tuple<Line,Stop> t : orig_depMap.keySet()) {
+		for(Tuple<XMLLine,XMLStop> t : orig_depMap.keySet()) {
 			//find stop in our list
 			boolean found = false;
-			for(Stop stop : this.stops) {
+			for(XMLStop stop : this.stops) {
 				if(stop.equals(t.getSecond())) {
 					found = true;
 					t.setSecond(stop);
@@ -146,7 +146,7 @@ public class DAO {
 
 			//find line in our list
 			found = false;
-			for(Line line : this.lines) {
+			for(XMLLine line : this.lines) {
 				if(line.equals(t.getFirst())) {
 					found = true;
 					t.setFirst(line);
@@ -159,9 +159,9 @@ public class DAO {
 
 			//validation done
 			//Create IDeparture, by putting location and time into Departure
-			List<Departure> dl = orig_depMap.get(t);
+			List<XMLDeparture> dl = orig_depMap.get(t);
 			List<IDeparture> idl = new ArrayList<IDeparture>(dl.size());
-			for(Departure d : dl) {
+			for(XMLDeparture d : dl) {
 				LatLng loc = getLocation(t.getSecond(), t.getFirst());
 				IDeparture id = new IDeparture(t.getSecond(), t.getFirst(), d.getTimestamp(), loc);
 				idl.add(id);
@@ -175,19 +175,19 @@ public class DAO {
 		/*
 		 * Estimate last stop arrivals
 		 */
-		for(Line l : lines) {
+		for(XMLLine l : lines) {
 			//get last and before-last stops
-			Stop s = l.getStops().get(l.getStops().size()-1);
-			Stop stopBefore = l.getStops().get(l.getStops().size()-2);
+			XMLStop s = l.getStops().get(l.getStops().size()-1);
+			XMLStop stopBefore = l.getStops().get(l.getStops().size()-2);
 
 			//get time difference
-			List<Step> steps = stepMap.get(l);
+			List<XMLStep> steps = stepMap.get(l);
 			TimeDiff td = new TimeDiff(steps.get(steps.size()-2).getTimestamp(),
 					steps.get(steps.size()-1).getTimestamp());
 			LatLng loc = getLocation(s, l);
 
 			//calculate all arrivals
-			List<IDeparture> beforeList = departureMap.get(new Tuple<Line, Stop>(l, stopBefore));
+			List<IDeparture> beforeList = departureMap.get(new Tuple<XMLLine, XMLStop>(l, stopBefore));
 			List<IDeparture> list = new ArrayList<IDeparture>(beforeList.size());
 			for(IDeparture depBefore : beforeList) {
 				IDeparture id = new IDeparture(s, l, 
@@ -195,17 +195,17 @@ public class DAO {
 				list.add(id);
 			}
 			//insert them
-			departureMap.put(new Tuple<Line, Stop>(l, s), list);
+			departureMap.put(new Tuple<XMLLine, XMLStop>(l, s), list);
 		}
 
 		log.info("Processing took {}", watch);
 	}
 
-	protected void setAllLines(List<Line> lines) {
+	protected void setAllLines(List<XMLLine> lines) {
 		this.lines = lines;
 	}
 
-	protected void setAllStops(List<Stop> stops) {
+	protected void setAllStops(List<XMLStop> stops) {
 		this.stops = stops;
 	}
 
@@ -213,11 +213,11 @@ public class DAO {
 		this.departures = departures;
 	}
 
-	public List<Line> getAllLines() {
+	public List<XMLLine> getAllLines() {
 		return Collections.unmodifiableList(lines);
 	}
 
-	public List<Stop> getAllStops() {
+	public List<XMLStop> getAllStops() {
 		return this.stops;
 	}
 
@@ -232,8 +232,8 @@ public class DAO {
 	 * @param time
 	 * @return departure if it exists following the given criteria, otherwise null
 	 */
-	public IDeparture getNextDeparture(Stop stop, Line line, Date time) {
-		Tuple<Line,Stop> t = new Tuple<Line,Stop>(line, stop);
+	public IDeparture getNextDeparture(XMLStop stop, XMLLine line, Date time) {
+		Tuple<XMLLine,XMLStop> t = new Tuple<XMLLine,XMLStop>(line, stop);
 		List<IDeparture> departures = departureMap.get(t);
 
 		if(departures == null) {
@@ -255,8 +255,8 @@ public class DAO {
 	 * @param line
 	 * @return
 	 */
-	public List<IDeparture> getAllDepartures(Stop stop, Line line) {
-		Tuple<Line,Stop> t = new Tuple<Line,Stop>(line, stop);
+	public List<IDeparture> getAllDepartures(XMLStop stop, XMLLine line) {
+		Tuple<XMLLine,XMLStop> t = new Tuple<XMLLine,XMLStop>(line, stop);
 		List<IDeparture> departures = departureMap.get(t);
 
 		return departures;
@@ -268,12 +268,12 @@ public class DAO {
 	 * @param line
 	 * @return
 	 */
-	public List<Stop> getNextStops(Stop stop, Line line) {
+	public List<XMLStop> getNextStops(XMLStop stop, XMLLine line) {
 		//TODO: check args
-		List<Stop> stopsAfter = new LinkedList<Stop>();
+		List<XMLStop> stopsAfter = new LinkedList<XMLStop>();
 		boolean found = false;
 
-		for(Stop s : line.getStops()) {
+		for(XMLStop s : line.getStops()) {
 			if(found) {
 				stopsAfter.add(s);
 			}
@@ -286,12 +286,12 @@ public class DAO {
 		return stopsAfter;
 	}
 
-	public Stop getNextStop(Stop stop, Line line) {
+	public XMLStop getNextStop(XMLStop stop, XMLLine line) {
 		//TODO: check args
-		Stop nStop = null;
+		XMLStop nStop = null;
 		boolean found = false;
 
-		for(Stop s : line.getStops()) {
+		for(XMLStop s : line.getStops()) {
 			if(found) {
 				nStop = s;
 				break;
@@ -305,11 +305,11 @@ public class DAO {
 		return nStop;
 	}
 
-	public PhysicalStop getPhysicalStop(Stop stop, Line line) {
+	public XMLPhysicalStop getPhysicalStop(XMLStop stop, XMLLine line) {
 		if(stop.getPhysicalStops() == null) {
 			return null;
 		}
-		for(PhysicalStop ph : stop.getPhysicalStops()) {
+		for(XMLPhysicalStop ph : stop.getPhysicalStops()) {
 			if(ph.getLines().getItems().contains(line)) {
 				return ph;
 			}
@@ -318,33 +318,33 @@ public class DAO {
 		return null;
 	}
 
-	public LatLng getLocation(Stop s, Line l) {
+	public LatLng getLocation(XMLStop s, XMLLine l) {
 		if(s.getPhysicalStops() == null) {
 			return null;
 		}
 
-		for(PhysicalStop ph : s.getPhysicalStops()) {
+		for(XMLPhysicalStop ph : s.getPhysicalStops()) {
 			if(ph.getLines().getItems().contains(l)) {
 				return ph.getLocation();
 			}
 		}
 
-		for(PhysicalStop ph : s.getPhysicalStops()) {
+		for(XMLPhysicalStop ph : s.getPhysicalStops()) {
 			return ph.getLocation();
 		}
 
 		return null;
 	}
 
-	public Stop getNearestStop(Line line, LatLng point) {
+	public XMLStop getNearestStop(XMLLine line, LatLng point) {
 		return getNearestStop(line, point, line.getStops());
 	}
 
-	public Stop getNearestStop(Line line, LatLng point, List<Stop> stops) {
-		Stop nearest = null;
+	public XMLStop getNearestStop(XMLLine line, LatLng point, List<XMLStop> stops) {
+		XMLStop nearest = null;
 		double minDistance = Double.MAX_VALUE;
 
-		for(Stop s : stops) {
+		for(XMLStop s : stops) {
 			LatLng loc = getLocation(s, line);
 			if(loc == null) {
 				//TODO log warn?

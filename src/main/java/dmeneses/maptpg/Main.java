@@ -25,7 +25,7 @@ import com.javadocmd.simplelatlng.LatLng;
 
 import dmeneses.maptpg.config.Configuration;
 import dmeneses.maptpg.database.DAO;
-import dmeneses.maptpg.database.Persistence;
+import dmeneses.maptpg.database.XmlDao;
 import dmeneses.maptpg.database.ResultsManager;
 import dmeneses.maptpg.datacollection.Collector;
 import dmeneses.maptpg.image.Renderer;
@@ -178,7 +178,7 @@ public class Main {
 	 * corresponding result will also be null.
 	 */
 	public static ArrayList<Itinerary> getItineraries(LatLng src, List<LatLng> dsts, Date startTime) throws JAXBException, ParserConfigurationException, IOException, SAXException {
-		Persistence fetcher = new Persistence();
+		XmlDao fetcher = new XmlDao();
 		fetcher.loadCache();
 		DAO dao = new DAO(fetcher);
 

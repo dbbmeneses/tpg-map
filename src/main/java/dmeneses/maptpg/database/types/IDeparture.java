@@ -7,8 +7,8 @@ import lombok.EqualsAndHashCode;
 
 import com.javadocmd.simplelatlng.LatLng;
 
-import dmeneses.maptpg.model.Line;
-import dmeneses.maptpg.model.Stop;
+import dmeneses.maptpg.datacollection.model.XMLLine;
+import dmeneses.maptpg.datacollection.model.XMLStop;
 import dmeneses.maptpg.utils.Tuple;
 
 
@@ -22,12 +22,12 @@ import dmeneses.maptpg.utils.Tuple;
 public class IDeparture implements Comparable<IDeparture>  {
 	private LatLng location;
 	private Date time;
-	private Tuple<Line, Stop> position;
+	private Tuple<XMLLine, XMLStop> position;
 
-	public IDeparture(Stop stop, Line line, Date time, LatLng location) {
+	public IDeparture(XMLStop stop, XMLLine line, Date time, LatLng location) {
 		this.time = time;
 		this.location = location;
-		this.position = new Tuple<Line,Stop>(line, stop);
+		this.position = new Tuple<XMLLine,XMLStop>(line, stop);
 	}
 
 	public IDeparture(IDeparture copy) {
@@ -36,19 +36,19 @@ public class IDeparture implements Comparable<IDeparture>  {
 		this.location = copy.location;
 	}
 
-	public Stop getStop() {
+	public XMLStop getStop() {
 		return position.getSecond();
 	}
 
-	public void setStop(Stop stop) {
+	public void setStop(XMLStop stop) {
 		this.position.setSecond(stop);
 	}
 
-	public Line getLine() {
+	public XMLLine getLine() {
 		return this.position.getFirst();
 	}
 
-	public void setLine(Line line) {
+	public void setLine(XMLLine line) {
 		this.position.setFirst(line);
 	}
 

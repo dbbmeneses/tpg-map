@@ -1,4 +1,4 @@
-package dmeneses.maptpg.model;
+package dmeneses.maptpg.datacollection.model;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -12,7 +12,7 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(of = {"code"})
 @XmlAccessorType(XmlAccessType.NONE)
 @Data
-public class Stop {
+public class XMLStop {
 	@XmlElement(name = "stopCode")
 	private String code;
 
@@ -23,10 +23,10 @@ public class Stop {
 	 *  the physical stops are requested!
 	 */
 	@XmlElement(name = "connections", type = ListWrapper.class)
-	private ListWrapper<Line> lines;
+	private ListWrapper<XMLLine> lines;
 
 	@XmlElement(name = "physicalStops", type = ListWrapper.class)
-	private ListWrapper<PhysicalStop> physicalStops;
+	private ListWrapper<XMLPhysicalStop> physicalStops;
 
 	@Override
 	public String toString() {

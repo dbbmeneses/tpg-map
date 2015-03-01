@@ -1,4 +1,4 @@
-package dmeneses.maptpg.model;
+package dmeneses.maptpg.datacollection.model;
 
 import java.util.Date;
 
@@ -12,27 +12,18 @@ import lombok.Data;
 import dmeneses.maptpg.datacollection.adapter.DateAdapter;
 
 @Data
-@XmlRootElement(name = "departure")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class Departure {
-	@XmlElement(name = "departureCode")
-	private String code;
-
-	private int waitingTime;
-	private int waitingTimeMillis;
-
-	@XmlElement(name = "connection")
-	private Line line;
-
-	private String reliability;
-	private String characteristics;
-
-	@XmlElement
+@XmlRootElement(name = "step")
+public class XMLStep {
+	@XmlElement(name = "stop", type = XMLStop.class)
+	private XMLStop stop;
 	@XmlJavaTypeAdapter(DateAdapter.class)
 	private Date timestamp;
-	
+	private String departureCode;
+	private int arrivalTime;
+
 	@Override
 	public String toString() {
-		return code + " (" + line + ") " + timestamp;
+		return departureCode + "\t" + timestamp + "\t" + arrivalTime + "\t" + stop;
 	}
 }

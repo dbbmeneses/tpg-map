@@ -11,46 +11,46 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.xml.sax.SAXException;
 
-import dmeneses.maptpg.model.Line;
-import dmeneses.maptpg.model.PhysicalStop;
-import dmeneses.maptpg.model.Stop;
+import dmeneses.maptpg.datacollection.model.XMLLine;
+import dmeneses.maptpg.datacollection.model.XMLPhysicalStop;
+import dmeneses.maptpg.datacollection.model.XMLStop;
 
 public class StopsCollector extends Collector {
 	private final static String dir = CACHE_ROOT + "stop" + File.separator;
-	private final static Class<?>[] classes = { Stop.class, Line.class, PhysicalStop.class };
+	private final static Class<?>[] classes = { XMLStop.class, XMLLine.class, XMLPhysicalStop.class };
 
-	public static void savePhysicalStops(List<Stop> stops) throws JAXBException {
+	public static void savePhysicalStops(List<XMLStop> stops) throws JAXBException {
 		String fileName = dir + "physicalstops.xml";
-		marshal(Stop.class, classes, stops, "stops", fileName);
+		marshal(XMLStop.class, classes, stops, "stops", fileName);
 	}
 
-	public static List<Stop> loadPhysicalStops() throws JAXBException, ParserConfigurationException, IOException, SAXException {
+	public static List<XMLStop> loadPhysicalStops() throws JAXBException, ParserConfigurationException, IOException, SAXException {
 		String fileName = dir + "physicalstops.xml";
-		return  unmarshal(Stop.class, classes, fileName, "stops");
+		return  unmarshal(XMLStop.class, classes, fileName, "stops");
 	}
 
-	public static void saveAllStops(List<Stop> stops) throws JAXBException {
+	public static void saveAllStops(List<XMLStop> stops) throws JAXBException {
 		String fileName = dir + "stops.xml";
-		marshal(Stop.class, classes, stops, "stops", fileName);
+		marshal(XMLStop.class, classes, stops, "stops", fileName);
 	}
 
-	public static List<Stop> loadAllStops() throws JAXBException, ParserConfigurationException, IOException, SAXException {
+	public static List<XMLStop> loadAllStops() throws JAXBException, ParserConfigurationException, IOException, SAXException {
 		String fileName = dir + "stops.xml";
-		return  unmarshal(Stop.class, classes, fileName, "stops");
+		return  unmarshal(XMLStop.class, classes, fileName, "stops");
 	}
 	
-	public static List<Stop> getPhysicalStops() throws JAXBException, ParserConfigurationException, IOException, SAXException, URISyntaxException {
+	public static List<XMLStop> getPhysicalStops() throws JAXBException, ParserConfigurationException, IOException, SAXException, URISyntaxException {
 		return getPhysicalStops(null, null);
 	}
 	
-	public static List<Stop> getAllStops() throws JAXBException, ParserConfigurationException, IOException, SAXException, URISyntaxException {
+	public static List<XMLStop> getAllStops() throws JAXBException, ParserConfigurationException, IOException, SAXException, URISyntaxException {
 		return getAllStops(null, null, null, null, null);
 	}
 	/**
 	 * Gives all stops. If latitude/longitude is given, returns stops within 500m from the point,
 	 * sorted by distance.
 	 */
-	public static List<Stop> getAllStops(String stopCode, String stopName,
+	public static List<XMLStop> getAllStops(String stopCode, String stopName,
 			String line, Float latitude, Float longitude) throws JAXBException, ParserConfigurationException, IOException, SAXException, URISyntaxException {
 
 		URI uri = new URI("http", "rtpi.data.tpg.ch", "/v1/GetStops.xml",
@@ -62,16 +62,16 @@ public class StopsCollector extends Collector {
 						+ ((longitude != null) ? "&longitude=" + longitude.toString() : ""),
 				null);
 
-		return unmarshal(Stop.class, classes, uri.toASCIIString(), "stops");
+		return unmarshal(XMLStop.class, classes, uri.toASCIIString(), "stops");
 	}
 
-	public static List<Stop> getPhysicalStops(String stopCode, String stopName) throws JAXBException, ParserConfigurationException, IOException, SAXException, URISyntaxException {
+	public static List<XMLStop> getPhysicalStops(String stopCode, String stopName) throws JAXBException, ParserConfigurationException, IOException, SAXException, URISyntaxException {
 		URI uri = new URI("http", "rtpi.data.tpg.ch", "/v1/GetPhysicalStops.xml",
 				"key=89c757c0-409e-11e3-821b-0002a5d5c51b"
 						+ ((stopCode != null) ? "&stopCode=" + stopCode : "")
 						+ ((stopName != null) ? "&stopName=" + stopName : ""),
 				null);
 
-		return unmarshal(Stop.class, classes, uri.toASCIIString(), "stops");
+		return unmarshal(XMLStop.class, classes, uri.toASCIIString(), "stops");
 	}
 }

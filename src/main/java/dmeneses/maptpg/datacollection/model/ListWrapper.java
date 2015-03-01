@@ -1,4 +1,4 @@
-package dmeneses.maptpg.model;
+package dmeneses.maptpg.datacollection.model;
 
 import java.util.ArrayList;
 import java.util.Iterator;

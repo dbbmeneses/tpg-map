@@ -1,4 +1,4 @@
-package dmeneses.maptpg.model;
+package dmeneses.maptpg.datacollection.model;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -17,7 +17,7 @@ import dmeneses.maptpg.datacollection.adapter.CoordinateAdapter;
 @XmlRootElement(name = "physicalStop")
 @XmlAccessorType(XmlAccessType.FIELD) //all fields serialized by default!
 @Data
-public class PhysicalStop {
+public class XMLPhysicalStop {
 	@XmlElement(name = "physicalStopCode")
 	private String code;
 	
@@ -29,7 +29,7 @@ public class PhysicalStop {
 	private LatLng location;
 	
 	@XmlElement(name = "connections", type=ListWrapper.class)
-	private ListWrapper<Line> lines;
+	private ListWrapper<XMLLine> lines;
 
 	@Override
 	public String toString() {

@@ -10,16 +10,17 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 
 import com.javadocmd.simplelatlng.LatLng;
 import com.javadocmd.simplelatlng.LatLngTool;
 import com.javadocmd.simplelatlng.util.LengthUnit;
 
 import dmeneses.maptpg.database.DAO;
-import dmeneses.maptpg.database.Persistence;
+import dmeneses.maptpg.database.XmlDao;
 import dmeneses.maptpg.database.types.IDeparture;
-import dmeneses.maptpg.model.Line;
-import dmeneses.maptpg.model.Stop;
+import dmeneses.maptpg.datacollection.model.XMLLine;
+import dmeneses.maptpg.datacollection.model.XMLStop;
 import dmeneses.maptpg.utils.Tools;
 import dmeneses.maptpg.utils.Tuple;
 
@@ -28,13 +29,14 @@ import dmeneses.maptpg.utils.Tuple;
  * @author Duarte Meneses <duarte.meneses@cern.ch>
  *
  */
+@Log4j2
 public class Dijkstra implements Runnable {
 	LatLng src;
 	LatLng dst;
-	Stop start;
+	XMLStop start;
 	Date startTime;
 	DAO dao;
-	Persistence persistence;
+	XmlDao persistence;
 	@Getter
 	Itinerary result;
 
@@ -47,9 +49,9 @@ public class Dijkstra implements Runnable {
 
 	public void run() {
 		SortedSet<IDeparture> candidates;
-		HashMap<Tuple<Line,Stop>,IDeparture> candidatesHash = new HashMap<Tuple<Line,Stop>,IDeparture>(10000);
+		HashMap<Tuple<XMLLine,XMLStop>,IDeparture> candidatesHash = new HashMap<Tuple<XMLLine,XMLStop>,IDeparture>(10000);
 		HashSet<IDeparture> visited = new HashSet<IDeparture>(10000);
-		HashMap<Tuple<Line,Stop>,IDeparture> visitedHash = new HashMap<Tuple<Line,Stop>,IDeparture>(10000);
+		HashMap<Tuple<XMLLine,XMLStop>,IDeparture> visitedHash = new HashMap<Tuple<XMLLine,XMLStop>,IDeparture>(10000);
 		HashMap<IDeparture, IDeparture> history = new HashMap<IDeparture, IDeparture>(3000);
 		HashMap<IDeparture, Integer> steps = new HashMap<IDeparture, Integer>(3000);
 
@@ -57,6 +59,8 @@ public class Dijkstra implements Runnable {
 		
 		candidates = getStartNodes(startTime, destination.getTime());
 		for(IDeparture d : candidates) {
+			log.trace("start node: {}");
+			
 			candidatesHash.put(d.getPosition(), d);
 			history.put(d, null);
 			steps.put(d, 1);
@@ -169,15 +173,15 @@ public class Dijkstra implements Runnable {
 	}
 	
 	private SortedSet<IDeparture> getStartNodes(Date startDate, Date walkArrival) {
-		List<Line> lines = dao.getAllLines();
+		List<XMLLine> lines = dao.getAllLines();
 		SortedSet<IDeparture> set = new TreeSet<IDeparture>();
 
 		//distance to destination
 		double totalDist = LatLngTool.distance(src, dst, LengthUnit.METER);
 
 		//add closest of each line
-		for(Line l : lines) {
-			Stop s = dao.getNearestStop(l, src);
+		for(XMLLine l : lines) {
+			XMLStop s = dao.getNearestStop(l, src);
 			if(s == null) { //some lines have no stops, because they have no physical info
 				continue;
 			}
@@ -226,7 +230,7 @@ public class Dijkstra implements Runnable {
 		/*
 		 * Find next stop and its cost
 		 */
-		Stop next = dao.getNextStop(n.getStop(), n.getLine());
+		XMLStop next = dao.getNextStop(n.getStop(), n.getLine());
 		if(next != null) {
 			IDeparture dep = dao.getNextDeparture(next, n.getLine(), n.getTime());
 			if(dep != null) {
@@ -238,9 +242,9 @@ public class Dijkstra implements Runnable {
 		 * Find connecting lines and transition costs
 		 */
 		///TODO: implement minimum connection time??
-		List<Line> lines = n.getStop().getLines().getItems();
+		List<XMLLine> lines = n.getStop().getLines().getItems();
 
-		for(Line l : lines) {
+		for(XMLLine l : lines) {
 			if(l.getCode().equals(n.getLine().getCode())) {
 				continue;
 			}

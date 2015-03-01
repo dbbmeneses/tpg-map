@@ -27,7 +27,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import dmeneses.maptpg.config.Configuration;
-import dmeneses.maptpg.model.ListWrapper;
+import dmeneses.maptpg.datacollection.model.ListWrapper;
 
 @Log4j2
 public abstract class Collector {

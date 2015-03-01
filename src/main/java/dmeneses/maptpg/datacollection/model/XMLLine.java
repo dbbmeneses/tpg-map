@@ -1,4 +1,4 @@
-package dmeneses.maptpg.model;
+package dmeneses.maptpg.datacollection.model;
 
 import java.util.List;
 
@@ -14,16 +14,16 @@ import lombok.EqualsAndHashCode;
 @XmlRootElement(name = "connection")
 @XmlAccessorType(XmlAccessType.FIELD)
 @EqualsAndHashCode(of = {"code", "destinationCode"})
-public class Line {
+public class XMLLine {
 	@XmlElement(name = "lineCode")
 	private String code;
 	private String destinationName;
 	private String destinationCode;
-	private List<Stop> stops;
+	private List<XMLStop> stops;
 
-	public Line() {}
+	public XMLLine() {}
 
-	public Line(String code, String destinationCode, List<Stop> stops) {
+	public XMLLine(String code, String destinationCode, List<XMLStop> stops) {
 		this.code = code;
 		this.destinationCode = destinationCode;
 		this.stops = stops;
