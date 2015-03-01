@@ -16,7 +16,7 @@ import com.javadocmd.simplelatlng.LatLngTool;
 import com.javadocmd.simplelatlng.util.LengthUnit;
 
 import dmeneses.maptpg.database.DAO;
-import dmeneses.maptpg.database.Persistence;
+import dmeneses.maptpg.database.XmlDao;
 import dmeneses.maptpg.database.types.IDeparture;
 import dmeneses.maptpg.process.Dijkstra;
 import dmeneses.maptpg.process.Itinerary;
@@ -26,7 +26,7 @@ import dmeneses.maptpg.process.Itinerary.DATA_TYPE;
 public class TestDijkstra {
 	public static void main(String[] args) throws JAXBException, ParserConfigurationException, IOException, SAXException {
 		//final Logger log = Logger.getLogger(Test.class.getName());
-		Persistence fetcher = new Persistence();
+		XmlDao fetcher = new XmlDao();
 		fetcher.loadCache();
 		DAO dao = new DAO(fetcher);
 		Itinerary result;
@@ -35,7 +35,7 @@ public class TestDijkstra {
 		LatLng src = new LatLng(46.20974027671904,6.14185631275177);
 		LatLng dst1 = new LatLng(46.23978524570758,6.033785821055062);
 		Calendar c = Calendar.getInstance();
-		c.set(2013, 10, 8, 17, 0, 0);
+		c.set(2015, 01, 28, 19, 45, 0);
 		Date startDate = c.getTime();
 		
 		//test run
